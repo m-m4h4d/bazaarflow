@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.shopping_bag_outlined, size: 80, color: Colors.deepPurple),
+                  Image.asset('assets/logo.png', height: 100),
                   const SizedBox(height: 16),
                   Text(
                     'Welcome to BazaarFlow',

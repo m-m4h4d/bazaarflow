@@ -52,7 +52,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.person_add_outlined, size: 80, color: Colors.deepPurple),
+                Image.asset('assets/logo.png', height: 100),
+                const SizedBox(height: 16),
+                Text(
+                  'Create BazaarFlow Account',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _nameController,
