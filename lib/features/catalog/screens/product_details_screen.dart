@@ -1,41 +1,71 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../../cart/models/cart_item.dart';
+import '../../cart/screens/cart_screen.dart';
 import '../../../core/database/database_helper.dart';
 
-class ProductDetailsScreen extends StatelessWidget {
+class ProductDetailsScreen extends StatefulWidget {
   final Product product;
 
   const ProductDetailsScreen({super.key, required this.product});
 
+  @override
+  State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
+}
+
+class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
+  int _quantity = 1;
+
   void _addToCart(BuildContext context) async {
     final cartItem = CartItem(
-      productId: product.id,
-      title: product.title,
-      price: product.price,
-      imageUrl: product.image,
-      quantity: 1,
+      productId: widget.product.id,
+      title: widget.product.title,
+      price: widget.product.price,
+      imageUrl: widget.product.image,
+      quantity: _quantity,
     );
 
     try {
       await DatabaseHelper.instance.insertCartItem(cartItem);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${product.title} added to cart!'),
-            action: SnackBarAction(
-              label: 'VIEW CART',
-              onPressed: () {
-                Navigator.pop(context); // Optional: close details, user can then go to cart tab
-              },
-            ),
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Success'),
+            content: Text('${widget.product.title} x$_quantity added to cart!'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('CONTINUE SHOPPING'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CartScreen()),
+                  );
+                },
+                child: const Text('VIEW CART'),
+              ),
+            ],
           ),
         );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error adding to cart: $e')),
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Error'),
+            content: Text('Error adding to cart: $e'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
         );
       }
     }
@@ -45,21 +75,21 @@ class ProductDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(product.title),
+        title: Text(widget.product.title),
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Hero(
-              tag: 'product-${product.id}',
+              tag: 'product-${widget.product.id}',
               child: Container(
                 color: Colors.white,
                 height: 300,
                 width: double.infinity,
                 padding: const EdgeInsets.all(24.0),
                 child: Image.network(
-                  product.image,
+                  widget.product.image,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -74,7 +104,7 @@ class ProductDetailsScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          product.title,
+                          widget.product.title,
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -82,7 +112,7 @@ class ProductDetailsScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 16),
                       Text(
-                        '\$${product.price.toStringAsFixed(2)}',
+                        '\$${widget.product.price.toStringAsFixed(2)}',
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               color: Theme.of(context).colorScheme.primary,
                               fontWeight: FontWeight.bold,
@@ -91,9 +121,39 @@ class ProductDetailsScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Chip(
-                    label: Text(product.category.toUpperCase()),
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Chip(
+                        label: Text(widget.product.category.toUpperCase()),
+                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.remove),
+                              onPressed: () {
+                                if (_quantity > 1) {
+                                  setState(() => _quantity--);
+                                }
+                              },
+                            ),
+                            Text('$_quantity', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            IconButton(
+                              icon: const Icon(Icons.add),
+                              onPressed: () {
+                                setState(() => _quantity++);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 24),
                   Text(
@@ -104,7 +164,7 @@ class ProductDetailsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    product.description,
+                    widget.product.description,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           height: 1.5,
                         ),

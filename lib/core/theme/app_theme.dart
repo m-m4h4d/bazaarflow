@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // Brand Colors
-  static const Color primaryColor = Color(0xFF6200EE);
-  static const Color secondaryColor = Color(0xFF03DAC6);
+  static const Color primaryColor = Color(0xFF114F80); // Dark Blue
+  static const Color secondaryColor = Color(0xFFFDCC10); // Yellow-Orange
   static const Color errorColor = Color(0xFFB00020);
   static const Color surfaceLight = Colors.white;
   static const Color surfaceDark = Color(0xFF1E1E1E);
@@ -80,14 +80,14 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: const ColorScheme.dark(
-        primary: Color(0xFFBB86FC),
+        primary: primaryColor,
         secondary: secondaryColor,
         surface: surfaceDark,
-        error: Color(0xFFCF6679),
-        onPrimary: Colors.black,
+        error: errorColor,
+        onPrimary: Colors.white,
         onSecondary: Colors.black,
         onSurface: Colors.white,
-        onError: Colors.black,
+        onError: Colors.white,
       ),
       scaffoldBackgroundColor: backgroundDark,
       appBarTheme: const AppBarTheme(
@@ -98,8 +98,8 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFBB86FC),
-          foregroundColor: Colors.black,
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -120,11 +120,11 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFBB86FC), width: 2),
+          borderSide: const BorderSide(color: primaryColor, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFCF6679), width: 1.5),
+          borderSide: const BorderSide(color: errorColor, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),

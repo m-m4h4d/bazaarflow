@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/utils/validators.dart';
+import '../providers/auth_provider.dart';
 import 'signup_screen.dart';
 import '../../catalog/screens/dashboard_screen.dart';
 
@@ -22,15 +24,18 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoading = true);
       // Simulate network request
       await Future.delayed(const Duration(seconds: 1));
+      
+      if (!mounted) return;
+      await context.read<AuthProvider>().login(_emailController.text);
+      
+      if (!mounted) return;
       setState(() => _isLoading = false);
       
-      if (mounted) {
-        // Navigate to Dashboard upon success
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
-        );
-      }
+      // Navigate to Dashboard upon success
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      );
     }
   }
 
@@ -109,6 +114,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                     },
                     child: const Text('Don\'t have an account? Sign Up'),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      await context.read<AuthProvider>().loginAsGuest();
+                      if (!mounted) return;
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                      );
+                    },
+                    child: const Text('Browse as Guest', style: TextStyle(color: Colors.grey)),
                   ),
                 ],
               ),

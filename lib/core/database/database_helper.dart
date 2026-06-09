@@ -48,11 +48,27 @@ class DatabaseHelper {
 
   // --- CRUD Operations for Cart ---
 
-  // Insert a cart item
+  // Insert a cart item or update quantity if it exists
   Future<int> insertCartItem(CartItem item) async {
     Database db = await instance.database;
-    // Handle conflict by replacing if product already exists (though we normally update quantity)
-    return await db.insert(tableCart, item.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    final List<Map<String, dynamic>> existingItems = await db.query(
+      tableCart,
+      where: 'product_id = ?',
+      whereArgs: [item.productId],
+    );
+
+    if (existingItems.isNotEmpty) {
+      final existingItem = CartItem.fromMap(existingItems.first);
+      final newQuantity = existingItem.quantity + item.quantity;
+      return await db.update(
+        tableCart,
+        {'quantity': newQuantity},
+        where: 'product_id = ?',
+        whereArgs: [item.productId],
+      );
+    } else {
+      return await db.insert(tableCart, item.toMap());
+    }
   }
 
   // Get all cart items

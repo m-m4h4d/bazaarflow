@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/database/database_helper.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../auth/screens/login_screen.dart';
 import '../models/cart_item.dart';
 
 class CartScreen extends StatefulWidget {
@@ -214,6 +217,15 @@ class _CartScreenState extends State<CartScreen> {
             ElevatedButton(
               onPressed: () async {
                 if (_cartItems.isEmpty) return;
+
+                if (context.read<AuthProvider>().isGuest) {
+                  // Direct the guest user to the Login screen directly which is better UX than pushing the Profile tab over the Cart.
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  );
+                  return;
+                }
                 
                 // Show success dialog
                 await showDialog(

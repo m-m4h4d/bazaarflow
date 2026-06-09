@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/utils/validators.dart';
+import '../providers/auth_provider.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -21,14 +23,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
       setState(() => _isLoading = true);
       // Simulate network request
       await Future.delayed(const Duration(seconds: 1));
+      
+      if (!mounted) return;
+      await context.read<AuthProvider>().signUp(_nameController.text, _emailController.text);
+      
+      if (!mounted) return;
       setState(() => _isLoading = false);
       
-      if (mounted) {
-        Navigator.pop(context); // Go back to login after signup
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account created successfully! Please login.')),
-        );
-      }
+      Navigator.pop(context); // Go back to login after signup
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account created successfully! Please login.')),
+      );
     }
   }
 
