@@ -120,7 +120,7 @@ class HomeScreen extends StatelessWidget {
                       sliver: SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: MediaQuery.of(context).size.width > 1200 ? 5 : MediaQuery.of(context).size.width > 800 ? 4 : MediaQuery.of(context).size.width > 600 ? 3 : 2,
-                          childAspectRatio: 1.0,
+                          childAspectRatio: MediaQuery.of(context).size.width > 600 ? 1.0 : 0.75,
                           crossAxisSpacing: 16,
                           mainAxisSpacing: 16,
                         ),
