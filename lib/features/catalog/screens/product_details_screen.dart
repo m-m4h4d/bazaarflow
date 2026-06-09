@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/product.dart';
+import '../../../core/providers/navigation_provider.dart';
 import '../../cart/models/cart_item.dart';
 import '../../cart/screens/cart_screen.dart';
 import '../../../core/database/database_helper.dart';
@@ -41,10 +43,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const CartScreen()),
-                  );
+                  context.read<NavigationProvider>().setTab(1);
+                  Navigator.popUntil(context, (route) => route.isFirst);
                 },
                 child: const Text('VIEW CART'),
               ),
@@ -74,9 +74,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.product.title),
-      ),
+      appBar: AppBar(title: Text(widget.product.title)),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -88,10 +86,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 height: 300,
                 width: double.infinity,
                 padding: const EdgeInsets.all(24.0),
-                child: Image.network(
-                  widget.product.image,
-                  fit: BoxFit.contain,
-                ),
+                child: Image.network(widget.product.image, fit: BoxFit.contain),
               ),
             ),
             Padding(
@@ -105,15 +100,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       Expanded(
                         child: Text(
                           widget.product.title,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
                       const SizedBox(width: 16),
                       Text(
                         '\$${widget.product.price.toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
                               color: Theme.of(context).colorScheme.primary,
                               fontWeight: FontWeight.bold,
                             ),
@@ -126,7 +121,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     children: [
                       Chip(
                         label: Text(widget.product.category.toUpperCase()),
-                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.primaryContainer,
                       ),
                       Container(
                         decoration: BoxDecoration(
@@ -143,7 +140,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                 }
                               },
                             ),
-                            Text('$_quantity', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text(
+                              '$_quantity',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             IconButton(
                               icon: const Icon(Icons.add),
                               onPressed: () {
@@ -159,15 +162,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   Text(
                     'Description',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     widget.product.description,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          height: 1.5,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(height: 1.5),
                   ),
                   const SizedBox(height: 40),
                 ],

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../../../core/database/database_helper.dart';
+import '../../../core/widgets/web_footer.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/screens/login_screen.dart';
 import '../models/cart_item.dart';
@@ -53,7 +55,7 @@ class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: kIsWeb ? null : AppBar(
         title: const Text('Shopping Cart'),
         actions: [
           if (_cartItems.isNotEmpty)
@@ -81,13 +83,38 @@ class _CartScreenState extends State<CartScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: _cartItems.isEmpty
-                  ? _buildEmptyState()
-                  : _buildCartList(),
+          : CustomScrollView(
+              slivers: [
+                if (_cartItems.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Column(
+                      children: [
+                        Expanded(child: _buildEmptyState()),
+                        if (kIsWeb) const WebFooter(),
+                      ],
+                    ),
+                  )
+                else ...[
+                  SliverToBoxAdapter(child: _buildCartList()),
+                  if (kIsWeb)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildCheckoutBar(),
+                            const WebFooter(),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ],
             ),
-      bottomNavigationBar: _cartItems.isEmpty || _isLoading ? null : _buildCheckoutBar(),
+      bottomNavigationBar: (!kIsWeb && _cartItems.isNotEmpty && !_isLoading) ? _buildCheckoutBar() : null,
     );
   }
 
@@ -112,6 +139,8 @@ class _CartScreenState extends State<CartScreen> {
 
   Widget _buildCartList() {
     return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       key: const ValueKey('cart_list'),
       itemCount: _cartItems.length,
       itemBuilder: (context, index) {

@@ -6,6 +6,7 @@ import 'core/theme/theme_provider.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/catalog/providers/product_provider.dart';
 import 'features/auth/providers/auth_provider.dart';
+import 'core/providers/navigation_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => NavigationProvider()),
       ],
       child: const BazaarFlowApp(),
     ),
