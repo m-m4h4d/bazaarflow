@@ -1,64 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-import '../../../core/database/database_helper.dart';
 import '../../../core/widgets/web_footer.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/screens/login_screen.dart';
-import '../models/cart_item.dart';
+import '../providers/cart_provider.dart';
 
-class CartScreen extends StatefulWidget {
+class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
   @override
-  State<CartScreen> createState() => _CartScreenState();
-}
-
-class _CartScreenState extends State<CartScreen> {
-  List<CartItem> _cartItems = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCart();
-  }
-
-  Future<void> _loadCart() async {
-    setState(() => _isLoading = true);
-    final items = await DatabaseHelper.instance.getCartItems();
-    setState(() {
-      _cartItems = items;
-      _isLoading = false;
-    });
-  }
-
-  Future<void> _updateQuantity(CartItem item, int newQuantity) async {
-    if (newQuantity <= 0) {
-      await _removeItem(item.id!);
-      return;
-    }
-    final updatedItem = item.copyWith(quantity: newQuantity);
-    await DatabaseHelper.instance.updateCartItem(updatedItem);
-    _loadCart();
-  }
-
-  Future<void> _removeItem(int id) async {
-    await DatabaseHelper.instance.deleteCartItem(id);
-    _loadCart();
-  }
-
-  double get _totalPrice {
-    return _cartItems.fold(0, (sum, item) => sum + (item.price * item.quantity));
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final cart = context.watch<CartProvider>();
+
     return Scaffold(
       appBar: kIsWeb ? null : AppBar(
         title: const Text('Shopping Cart'),
         actions: [
-          if (_cartItems.isNotEmpty)
+          if (!cart.isEmpty)
             IconButton(
               icon: const Icon(Icons.delete_sweep),
               onPressed: () async {
@@ -73,30 +32,29 @@ class _CartScreenState extends State<CartScreen> {
                     ],
                   ),
                 );
-                if (confirm == true) {
-                  await DatabaseHelper.instance.clearCart();
-                  _loadCart();
+                if (confirm == true && context.mounted) {
+                  await context.read<CartProvider>().clear();
                 }
               },
             ),
         ],
       ),
-      body: _isLoading
+      body: cart.isLoading
           ? const Center(child: CircularProgressIndicator())
           : CustomScrollView(
               slivers: [
-                if (_cartItems.isEmpty)
+                if (cart.isEmpty)
                   SliverFillRemaining(
                     hasScrollBody: false,
                     child: Column(
                       children: [
-                        Expanded(child: _buildEmptyState()),
+                        Expanded(child: _buildEmptyState(context)),
                         if (kIsWeb) const WebFooter(),
                       ],
                     ),
                   )
                 else ...[
-                  SliverToBoxAdapter(child: _buildCartList()),
+                  SliverToBoxAdapter(child: _buildCartList(context, cart)),
                   if (kIsWeb)
                     SliverFillRemaining(
                       hasScrollBody: false,
@@ -105,7 +63,7 @@ class _CartScreenState extends State<CartScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            _buildCheckoutBar(),
+                            _buildCheckoutBar(context, cart),
                             const WebFooter(),
                           ],
                         ),
@@ -114,11 +72,11 @@ class _CartScreenState extends State<CartScreen> {
                 ],
               ],
             ),
-      bottomNavigationBar: (!kIsWeb && _cartItems.isNotEmpty && !_isLoading) ? _buildCheckoutBar() : null,
+      bottomNavigationBar: (!kIsWeb && !cart.isEmpty && !cart.isLoading) ? _buildCheckoutBar(context, cart) : null,
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       key: const ValueKey('empty_state'),
       child: Column(
@@ -137,14 +95,14 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCartList() {
+  Widget _buildCartList(BuildContext context, CartProvider cart) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       key: const ValueKey('cart_list'),
-      itemCount: _cartItems.length,
+      itemCount: cart.items.length,
       itemBuilder: (context, index) {
-        final item = _cartItems[index];
+        final item = cart.items[index];
         return Dismissible(
           key: ValueKey(item.id),
           direction: DismissDirection.endToStart,
@@ -154,7 +112,7 @@ class _CartScreenState extends State<CartScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: const Icon(Icons.delete, color: Colors.white),
           ),
-          onDismissed: (_) => _removeItem(item.id!),
+          onDismissed: (_) => cart.removeItem(item.id!),
           child: Card(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Padding(
@@ -197,12 +155,12 @@ class _CartScreenState extends State<CartScreen> {
                     children: [
                       IconButton(
                         icon: const Icon(Icons.remove_circle_outline),
-                        onPressed: () => _updateQuantity(item, item.quantity - 1),
+                        onPressed: () => cart.updateQuantity(item, item.quantity - 1),
                       ),
                       Text('${item.quantity}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       IconButton(
                         icon: const Icon(Icons.add_circle_outline),
-                        onPressed: () => _updateQuantity(item, item.quantity + 1),
+                        onPressed: () => cart.updateQuantity(item, item.quantity + 1),
                       ),
                     ],
                   ),
@@ -215,7 +173,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCheckoutBar() {
+  Widget _buildCheckoutBar(BuildContext context, CartProvider cart) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -238,14 +196,14 @@ class _CartScreenState extends State<CartScreen> {
               children: [
                 const Text('Total:', style: TextStyle(color: Colors.grey, fontSize: 14)),
                 Text(
-                  '\$${_totalPrice.toStringAsFixed(2)}',
+                  '\$${cart.totalPrice.toStringAsFixed(2)}',
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             ElevatedButton(
               onPressed: () async {
-                if (_cartItems.isEmpty) return;
+                if (cart.isEmpty) return;
 
                 if (context.read<AuthProvider>().isGuest) {
                   // Direct the guest user to the Login screen directly which is better UX than pushing the Profile tab over the Cart.
@@ -272,8 +230,7 @@ class _CartScreenState extends State<CartScreen> {
                 );
                 
                 // Clear the cart
-                await DatabaseHelper.instance.clearCart();
-                _loadCart();
+                await cart.clear();
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),

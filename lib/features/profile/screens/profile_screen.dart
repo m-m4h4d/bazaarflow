@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
+import '../../../core/providers/navigation_provider.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/web_footer.dart';
 import '../../auth/screens/login_screen.dart';
@@ -54,7 +55,7 @@ class ProfileScreen extends StatelessWidget {
                                   padding: const EdgeInsets.only(top: 16.0),
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      Navigator.pushReplacement(
+                                      Navigator.push(
                                         context,
                                         MaterialPageRoute(builder: (context) => const LoginScreen()),
                                       );
@@ -89,12 +90,12 @@ class ProfileScreen extends StatelessWidget {
                         return ListTile(
                           leading: const Icon(Icons.exit_to_app),
                           title: const Text('Logout'),
-                          onTap: () {
-                            context.read<AuthProvider>().logout();
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (context) => const LoginScreen()),
-                              (Route<dynamic> route) => false,
-                            );
+                          onTap: () async {
+                            await context.read<AuthProvider>().logout();
+                            if (!context.mounted) return;
+                            context.read<NavigationProvider>().setTab(0);
+                            // AuthGate swaps to the login screen once the session is cleared
+                            Navigator.of(context).popUntil((route) => route.isFirst);
                           },
                         );
                       },
