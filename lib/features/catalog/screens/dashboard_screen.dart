@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/providers/navigation_provider.dart';
+import '../../cart/providers/cart_provider.dart';
 import '../../cart/screens/cart_screen.dart';
 import '../../profile/screens/profile_screen.dart';
 import 'home_screen.dart';
@@ -21,10 +22,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ProfileScreen(),
   ];
 
+  // Wraps the cart icon with a badge showing how many units are in the cart
+  Widget _cartIcon(Widget icon, int count) {
+    return Badge(
+      isLabelVisible: count > 0,
+      label: Text(count > 99 ? '99+' : '$count'),
+      child: icon,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final navProvider = context.watch<NavigationProvider>();
     final currentIndex = navProvider.currentIndex;
+    final cartCount = context.select<CartProvider, int>((cart) => cart.itemCount);
 
     if (kIsWeb) {
       final themeProvider = context.watch<ThemeProvider>();
@@ -53,7 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(width: 16),
                   TextButton.icon(
                     onPressed: () => navProvider.setTab(1),
-                    icon: Icon(Icons.shopping_cart_outlined, color: currentIndex == 1 ? Theme.of(context).colorScheme.secondary : Colors.white),
+                    icon: _cartIcon(Icon(Icons.shopping_cart_outlined, color: currentIndex == 1 ? Theme.of(context).colorScheme.secondary : Colors.white), cartCount),
                     label: Text('Cart', style: TextStyle(color: currentIndex == 1 ? Theme.of(context).colorScheme.secondary : Colors.white)),
                   ),
                   const SizedBox(width: 16),
@@ -102,7 +113,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       },
                     ),
                     ListTile(
-                      leading: const Icon(Icons.shopping_cart_outlined),
+                      leading: _cartIcon(const Icon(Icons.shopping_cart_outlined), cartCount),
                       title: const Text('Cart'),
                       selected: currentIndex == 1,
                       onTap: () {
@@ -141,10 +152,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: (index) => navProvider.setTab(index),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: 'Cart'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+        items: [
+          const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
+          BottomNavigationBarItem(icon: _cartIcon(const Icon(Icons.shopping_cart_outlined), cartCount), label: 'Cart'),
+          const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
         ],
       ),
     );

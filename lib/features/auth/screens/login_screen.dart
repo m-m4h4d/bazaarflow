@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../../core/utils/validators.dart';
 import '../providers/auth_provider.dart';
 import 'signup_screen.dart';
-import '../../catalog/screens/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -30,12 +29,9 @@ class _LoginScreenState extends State<LoginScreen> {
       
       if (!mounted) return;
       setState(() => _isLoading = false);
-      
-      // Navigate to Dashboard upon success
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
-      );
+
+      // AuthGate shows the dashboard once signed in; drop any screens pushed over it
+      Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
 
@@ -118,11 +114,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextButton(
                     onPressed: () async {
                       await context.read<AuthProvider>().loginAsGuest();
-                      if (!mounted) return;
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const DashboardScreen()),
-                      );
+                      if (!context.mounted) return;
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     },
                     child: const Text('Browse as Guest', style: TextStyle(color: Colors.grey)),
                   ),

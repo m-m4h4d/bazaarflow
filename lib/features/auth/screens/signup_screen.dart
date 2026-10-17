@@ -30,9 +30,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (!mounted) return;
       setState(() => _isLoading = false);
       
-      Navigator.pop(context); // Go back to login after signup
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account created successfully! Please login.')),
+      // Signing up starts a session, so return to AuthGate (or the screen that asked for login)
+      final messenger = ScaffoldMessenger.of(context);
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Account created successfully! Welcome to BazaarFlow.')),
       );
     }
   }

@@ -3,8 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../../../core/providers/navigation_provider.dart';
 import '../../cart/models/cart_item.dart';
-import '../../cart/screens/cart_screen.dart';
-import '../../../core/database/database_helper.dart';
+import '../../cart/providers/cart_provider.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Product product;
@@ -28,7 +27,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
 
     try {
-      await DatabaseHelper.instance.insertCartItem(cartItem);
+      await context.read<CartProvider>().addItem(cartItem);
       if (context.mounted) {
         showDialog(
           context: context,

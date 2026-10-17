@@ -3,9 +3,10 @@ import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
-import 'features/auth/screens/login_screen.dart';
+import 'features/auth/screens/auth_gate.dart';
 import 'features/catalog/providers/product_provider.dart';
 import 'features/auth/providers/auth_provider.dart';
+import 'features/cart/providers/cart_provider.dart';
 import 'core/providers/navigation_provider.dart';
 
 void main() {
@@ -17,6 +18,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: const BazaarFlowApp(),
     ),
@@ -36,7 +38,7 @@ class BazaarFlowApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeProvider.themeMode,
-          home: const LoginScreen(), // Update later to Dashboard or Auth checker
+          home: const AuthGate(),
         );
       },
     );
